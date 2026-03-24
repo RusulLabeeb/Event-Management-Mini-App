@@ -9,17 +9,24 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2EC4B6', // Teal
-          soft: '#90DBA5', // Soft Green
+          DEFAULT: '#1FD3BA', // Teal - تركواز مشرق
+          light: '#48E5D5',
+          dark: '#17A89E',
+        },
+        secondary: '#FFD93D', // Yellow - أصفر مشرق
+        accent: {
+          DEFAULT: '#5B8DEE', // Blue - أزرق
+          teal: '#1FD3BA',
         },
         bg: {
-          light: '#F7F9FB', // Light Gray
-          dark: '#0F172A', // Dark Mode
+          light: '#F5F7FA',
+          dark: '#0F172A',
         },
-        accent: {
-          DEFAULT: '#2EC4B6',
-          secondary: '#90DBA5',
-        }
+      },
+      backgroundImage: {
+        'gradient-teal': 'linear-gradient(135deg, #1FD3BA 0%, #48E5D5 100%)',
+        'gradient-blue': 'linear-gradient(135deg, #5B8DEE 0%, #7EA1FF 100%)',
+        'gradient-hero': 'linear-gradient(135deg, #5B8DEE 0%, #1FD3BA 100%)',
       },
       borderRadius: {
         '3xl': '1.5rem',

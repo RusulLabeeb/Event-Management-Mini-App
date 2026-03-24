@@ -1,63 +1,102 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Compass, Search, MapPin, SlidersHorizontal, Heart, Clock, Star, Zap } from 'lucide-react';
+import { Compass, MapPin, SlidersHorizontal, Star, Zap } from 'lucide-react';
 import { EVENTS } from '../data/mockData';
 import EventCard from '../components/EventCard';
 import SearchBar from '../components/SearchBar';
 
 const ExplorePage = () => {
   return (
-    <div className="min-h-screen bg-bg-light dark:bg-bg-dark pb-32 animate-fadeIn stagger-1">
-      <header className="px-6 pt-12 pb-8 flex flex-col gap-6 sticky top-0 bg-bg-light/80 dark:bg-bg-dark/80 backdrop-blur-3xl z-40 transition-shadow">
-        <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2 group cursor-default">
-              Explore Events
-              <Compass size={24} className="text-primary group-hover:rotate-180 transition-transform duration-700 shadow-glow" />
+    <div className="min-h-screen bg-white dark:bg-[#0F172A] pb-32 animate-fadeIn">
+      <header className="px-5 pt-8 pb-6 sticky top-0 bg-white/80 dark:bg-[#0F172A]/80 backdrop-blur-2xl z-40 border-b border-slate-100 dark:border-slate-800">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              Explore
+              <Compass size={28} className="text-primary" />
             </h1>
-            <div className="p-3 glass dark:glass-dark rounded-full text-slate-500 group cursor-pointer hover:bg-primary/20 hover:text-primary transition-all active:scale-95">
-              <SlidersHorizontal size={20} />
-            </div>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-primary/10 transition-all"
+            >
+              <SlidersHorizontal size={20} className="text-primary" />
+            </motion.button>
+          </div>
+          <SearchBar />
         </div>
-        <SearchBar />
       </header>
 
-      <main className="px-6 space-y-10">
-        {/* Quick Filters */}
-        <section className="flex gap-4 overflow-x-auto no-scrollbar py-2 animate-slideUp stagger-1">
-          {['Free', 'Paid', 'Trending', 'Nearby', 'Family'].map((filter, i) => (
-            <button key={filter} className={`px-6 py-4 rounded-3xl font-bold text-sm transition-all whitespace-nowrap border-2 ring-1 ring-black/5 dark:ring-white/5 ${
-              i === 2 ? 'bg-primary text-white border-primary shadow-glow shadow-primary/30' : 'bg-white dark:bg-slate-800 text-slate-500 border-white/50 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600 active:scale-95 shadow-sm'
-            }`}>
-              {filter}
-            </button>
-          ))}
-        </section>
-
-        {/* Discovery Sections */}
-        <section className="space-y-6 animate-slideUp stagger-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                Popular in Your City
-                <Star size={18} className="text-yellow-400 fill-yellow-400 shadow-glow" />
-            </h3>
-            <button className="text-primary font-bold text-xs uppercase tracking-widest hover:underline hover:underline-offset-4 decoration-2">View Map</button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {EVENTS.slice(0, 4).map((event) => (
-              <EventCard key={event.id} event={event} horizontal />
+      <main className="px-5 space-y-8 py-8">
+        {/* Quick Filter Tabs */}
+        <section className="space-y-4 animate-slideUp">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+            {['All', 'Trips', 'Hotels', 'Camping', 'Heritage'].map((filter, i) => (
+              <motion.button
+                key={filter}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-5 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all ${
+                  i === 0
+                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                }`}
+              >
+                {filter}
+              </motion.button>
             ))}
           </div>
         </section>
 
-        {/* Trending Events Area */}
-        <section className="space-y-6 animate-slideUp stagger-3">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 px-1">
+        {/* Popular Destinations */}
+        <section className="space-y-4 animate-slideUp">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <Star size={20} className="fill-secondary text-secondary" />
+              Popular in Your City
+            </h2>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              className="text-primary font-bold text-xs uppercase tracking-widest hover:underline"
+            >
+              View Map
+            </motion.button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {EVENTS.slice(0, 4).map((event, idx) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <EventCard event={event} horizontal />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Trending Adventures */}
+        <section className="space-y-4 animate-slideUp">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <Zap size={20} className="fill-primary text-primary" />
             Trending Adventures
-            <Zap size={18} className="text-primary-soft shadow-glow" />
-          </h3>
-          <div className="flex gap-8 overflow-x-auto no-scrollbar pb-8 pt-2 px-1 py-1">
-            {EVENTS.slice().reverse().map((event) => (
-              <EventCard key={`explore-${event.id}`} event={event} />
+          </h2>
+
+          <div className="grid grid-cols-1 gap-6">
+            {EVENTS.slice(0, 3).map((event, idx) => (
+              <motion.div
+                key={`trending-${event.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="w-full"
+              >
+                <EventCard event={event} />
+              </motion.div>
             ))}
           </div>
         </section>
