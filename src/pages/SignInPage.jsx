@@ -79,9 +79,18 @@ const SignInPage = () => {
             Sign In
             <ArrowRight size={18} />
           </button>
+
+          {/* Continue as Guest */}
+          <button 
+            type="button"
+            onClick={() => navigate('/home')}
+            className="w-full h-14 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-slate-50 dark:hover:bg-white/10"
+          >
+            Continue as Guest
+          </button>
         </form>
 
-        <div className="pt-8 text-center space-y-4">
+        <div className="pt-4 text-center space-y-4">
           <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter">
             Don't have an account? 
             <Link to="/signup" className="text-teal-500 ml-2 hover:underline">Sign Up</Link>
@@ -105,6 +114,7 @@ const SignInPage = () => {
             </button>
           </div>
         </div>
+
       </motion.div>
     </motion.div>
   );

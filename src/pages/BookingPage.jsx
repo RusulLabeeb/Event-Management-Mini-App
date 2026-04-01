@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Check, Ticket, Users, CreditCard, X, QrCode } from 'lucide-react';
+import { ChevronLeft, Check, Ticket, Users, CreditCard, X, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { EVENTS, TICKET_TYPES } from '../data/mockData';
-import Button from '../components/Button';
 
 const BookingPage = () => {
   const { id } = useParams();
@@ -12,263 +11,230 @@ const BookingPage = () => {
   const event = EVENTS.find(e => e.id === parseInt(id));
 
   const [selectedTicket, setSelectedTicket] = useState(TICKET_TYPES[0].id);
+  const [ticketCount, setTicketCount] = useState(1);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showQR, setShowQR] = useState(false);
-  const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   if (!event) return null;
 
   const toggleSeat = (seatId) => {
-    if (selectedSeats.includes(seatId)) {
-      setSelectedSeats(selectedSeats.filter(s => s !== seatId));
-    } else {
-      setSelectedSeats([...selectedSeats, seatId]);
-    }
+    setSelectedSeats(prev =>
+      prev.includes(seatId) ? prev.filter(s => s !== seatId) : [...prev, seatId]
+    );
   };
 
-  const ticketPrice = TICKET_TYPES.find(t => t.id === selectedTicket).price * event.price;
-  const totalAmount = ticketPrice * Math.max(1, selectedSeats.length);
+  const currentTicket = TICKET_TYPES.find(t => t.id === selectedTicket);
+  const ticketPrice = currentTicket.price * event.price;
+  const totalAmount = (ticketPrice * (selectedSeats.length || ticketCount)).toFixed(2);
 
   const handleConfirm = () => {
-    setBookingConfirmed(true);
+    setIsConfirming(true);
     setTimeout(() => {
+        setIsConfirming(false);
         setShowQR(true);
-    }, 1500);
+    }, 1200);
   };
 
   const rows = ['A', 'B', 'C', 'D'];
   const cols = [1, 2, 3, 4, 5, 6];
+  const occupied = ['B3', 'A5', 'C2', 'D4'];
 
   return (
-    <div className="min-h-screen bg-bg-light dark:bg-bg-dark pb-32 animate-fadeIn">
-      {/* Header */}
-      <header className="px-6 pt-12 pb-6 flex items-center justify-between sticky top-0 bg-bg-light/80 dark:bg-bg-dark/80 backdrop-blur-3xl z-40">
-        <button 
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F1A] pb-44 animate-fadeIn">
+
+      {/* ─── DENSE HEADER ─── */}
+      <header className="px-5 pt-10 pb-4 sticky top-0 bg-slate-50/80 dark:bg-[#0B0F1A]/80 backdrop-blur-2xl z-40 flex items-center gap-4 border-b border-transparent hover:border-slate-100 dark:hover:border-white/5">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={() => navigate(-1)}
-          className="p-4 glass rounded-full shadow-lg active:scale-95 transition-all text-slate-800 dark:text-white"
+          className="w-10 h-10 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center text-slate-800 dark:text-white border border-slate-100 dark:border-white/5"
         >
-          <ChevronLeft size={24} />
-        </button>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Select Tickets</h2>
-        <div className="w-12 h-12" /> {/* Spacer */}
+          <ChevronLeft size={20} strokeWidth={3} />
+        </motion.button>
+        <div className="flex flex-col">
+          <h1 className="text-lg font-black text-slate-800 dark:text-white leading-tight">Checkout</h1>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{event.title}</p>
+        </div>
       </header>
 
-      <main className="px-6 space-y-10">
-        {/* Event Summary Minor */}
-        <div className="flex items-center gap-4 p-4 glass dark:glass-dark rounded-4xl border-white/20">
-          <img src={event.image} alt="" className="w-16 h-16 rounded-2xl object-cover" />
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-white">{event.title}</h3>
-            <p className="text-xs text-slate-400 font-medium">{event.duration} • {event.location}</p>
-          </div>
+      <main className="px-5 space-y-8 pt-4">
+
+        {/* ─── COMPACT EVENT INFO ─── */}
+        <div className="p-4 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm flex items-center gap-4">
+           <img src={event.image} alt="" className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/10 shadow-lg" />
+           <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-black text-slate-800 dark:text-white line-clamp-1">{event.title}</h3>
+              <div className="flex items-center gap-1 opacity-60 mt-1">
+                 <Calendar size={10} className="text-primary" />
+                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{event.date}</span>
+              </div>
+           </div>
+           <div className="text-right">
+              <span className="text-[9px] font-black text-primary uppercase block mb-1">Standard</span>
+              <p className="text-xl font-black text-slate-800 dark:text-white tracking-tighter">${event.price}</p>
+           </div>
         </div>
 
-        {/* Ticket Types */}
+        {/* ─── TICKET TYPES (GRID) ─── */}
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            Ticket Type
-            <Ticket size={20} className="text-primary-soft" />
-          </h3>
-          <div className="grid grid-cols-1 gap-4">
-            {TICKET_TYPES.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => setSelectedTicket(type.id)}
-                className={`flex items-center justify-between p-6 rounded-4xl border-2 transition-all duration-300 ${
-                  selectedTicket === type.id
-                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                    : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/40'
-                }`}
-              >
-                <div className="flex flex-col items-start gap-1">
-                  <span className={`font-bold text-lg ${selectedTicket === type.id ? 'text-primary' : 'text-slate-800 dark:text-slate-200'}`}>
-                    {type.name}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">{type.description}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xl font-extrabold text-slate-900 dark:text-white">
-                    ${(type.price * event.price).toFixed(0)}
-                  </span>
-                  {selectedTicket === type.id && (
-                    <div className="p-2 bg-primary text-white rounded-full shadow-glow">
-                      <Check size={16} />
+           <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] px-1 flex items-center gap-2">
+              <Ticket size={14} className="text-primary" /> Select Type
+           </h2>
+           <div className="grid grid-cols-1 gap-2.5">
+              {TICKET_TYPES.map(type => (
+                <button
+                  key={type.id}
+                  onClick={() => setSelectedTicket(type.id)}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    selectedTicket === type.id
+                      ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5'
+                      : 'border-slate-100 dark:border-white/5 bg-white dark:bg-slate-800/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl group-hover:scale-125 transition-transform">{type.icon}</span>
+                    <div className="text-left">
+                       <p className={`font-black text-xs uppercase tracking-widest ${selectedTicket === type.id ? 'text-primary' : 'text-slate-800 dark:text-slate-200'}`}>{type.name}</p>
+                       <p className="text-[9px] text-slate-400 font-bold opacity-60 mt-0.5">{type.description}</p>
                     </div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Seat Selection Mockup */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              Select Seats
-              <Users size={20} className="text-primary-soft" />
-            </h3>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{selectedSeats.length} Selected</span>
-          </div>
-
-          <div className="glass dark:glass-dark p-8 rounded-5xl border-white/20 shadow-xl space-y-8 flex flex-col items-center">
-            {/* Stage/Screen */}
-            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700/50 rounded-full shadow-inner relative">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] uppercase font-bold text-slate-400 tracking-[0.3em]">Stage Area</div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-primary rounded-full blur-[2px] opacity-40 animate-pulse" />
-            </div>
-
-            <div className="grid grid-cols-6 gap-3">
-              {rows.map(row => (
-                cols.map(col => {
-                  const seatId = `${row}${col}`;
-                  const isSelected = selectedSeats.includes(seatId);
-                  const isOccupied = (row === 'B' && col === 3) || (row === 'A' && col === 5);
-                  
-                  return (
-                    <button
-                      key={seatId}
-                      disabled={isOccupied}
-                      onClick={() => toggleSeat(seatId)}
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-bold transition-all transform active:scale-75 ${
-                        isOccupied 
-                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40' 
-                          : isSelected
-                            ? 'bg-primary text-white shadow-glow scale-110'
-                            : 'bg-white dark:bg-slate-700/50 text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-600/50 hover:bg-slate-50 dark:hover:bg-slate-600'
-                      }`}
-                    >
-                      {seatId}
-                    </button>
-                  );
-                })
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className="text-lg font-black text-slate-800 dark:text-white leading-none tracking-tighter">${(type.price * event.price).toFixed(0)}</p>
+                    {selectedTicket === type.id && (
+                      <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center text-white scale-110 shadow-lg shadow-primary/30">
+                        <Check size={12} strokeWidth={4} />
+                      </div>
+                    )}
+                  </div>
+                </button>
               ))}
-            </div>
-
-            <div className="flex gap-6 pt-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Available</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-primary" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Selected</span>
-                </div>
-                <div className="flex items-center gap-2 opacity-50">
-                    <div className="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-800" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Sold</span>
-                </div>
-            </div>
-          </div>
+           </div>
         </section>
+
+        {/* ─── SEAT SELECTOR (TIGHTER) ─── */}
+        <section className="space-y-4">
+           <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] px-1 flex items-center justify-between">
+              <span className="flex items-center gap-2"><Users size={14} className="text-primary" /> Seats</span>
+              <span className="text-[10px] font-black text-primary">{selectedSeats.length} Reserved</span>
+           </h2>
+           <div className="p-6 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-inner-xl space-y-6">
+              {/* STAGE */}
+              <div className="space-y-1.5 opacity-40">
+                 <div className="w-full h-1 bg-primary/40 rounded-full blur-[1px]" />
+                 <p className="text-center text-[8px] font-black uppercase text-slate-400 tracking-[0.3em]">Main Stage</p>
+              </div>
+
+              {/* GRID */}
+              <div className="space-y-2">
+                 {rows.map(row => (
+                   <div key={row} className="flex items-center gap-2.5">
+                      <span className="text-[8px] font-black text-slate-400 w-3 text-center">{row}</span>
+                      <div className="flex-1 flex gap-2 justify-center">
+                         {cols.map(col => {
+                           const sId = `${row}${col}`;
+                           const isOcc = occupied.includes(sId);
+                           const isSel = selectedSeats.includes(sId);
+                           return (
+                             <motion.button
+                               key={sId}
+                               whileTap={{ scale: 0.8 }}
+                               disabled={isOcc}
+                               onClick={() => toggleSeat(sId)}
+                               className={`w-8 h-8 rounded-lg text-[8px] font-black transition-all ${
+                                 isOcc ? 'bg-slate-100 dark:bg-white/5 text-slate-300 opacity-30 cursor-not-allowed' :
+                                 isSel ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-115 border-0' :
+                                 'bg-slate-50 dark:bg-slate-800 text-slate-500 border border-slate-100 dark:border-white/5'
+                               }`}
+                             >
+                               {sId}
+                             </motion.button>
+                           );
+                         })}
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        </section>
+
       </main>
 
-      {/* Booking Summary Floating */}
-      <div className="fixed bottom-0 left-0 right-0 p-8 z-50 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <AnimatePresence mode="wait">
-            {!bookingConfirmed ? (
-              <motion.div 
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                className="glass dark:glass-dark p-6 rounded-5xl border-white/20 shadow-2xl space-y-4 ring-1 ring-black/5 dark:ring-white/5"
-              >
-                <div className="flex justify-between items-center px-2">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none mb-1">Total Fee</span>
-                    <span className="text-3xl font-extrabold text-slate-900 dark:text-white">${totalAmount}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs font-bold text-primary italic">{selectedSeats.length || 1} Ticket{selectedSeats.length !== 1 ? 's' : ''}</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Service fee included</span>
-                  </div>
-                </div>
-                <Button 
-                  onClick={handleConfirm}
-                  disabled={selectedSeats.length === 0}
-                  className="w-full h-20 text-xl font-extrabold rounded-4xl flex items-center justify-center gap-3 shadow-glow"
-                >
-                  <CreditCard size={24} />
-                  Confirm Booking
-                </Button>
-              </motion.div>
+      {/* ─── STICKY MINI-FOOTER ─── */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-50 bg-gradient-to-t from-slate-50 dark:from-[#0B0F1A] to-transparent">
+        <div className="max-w-[380px] mx-auto bg-slate-900 rounded-3xl p-4 flex items-center justify-between shadow-2xl overflow-hidden group">
+          <div className="flex flex-col pl-2">
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total Pay</span>
+            <span className="text-2xl font-black text-white leading-none tracking-tighter">${totalAmount}</span>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleConfirm}
+            disabled={isConfirming}
+            className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-lg shadow-primary/40 relative overflow-hidden"
+          >
+            {isConfirming ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-primary p-8 rounded-5xl shadow-2xl text-center space-y-4"
-              >
-                <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                  <Check size={40} className="text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Booking Confirmed!</h3>
-                <p className="text-white/80 font-medium">Your tickets have been reserved. Preparing your digital pass...</p>
-              </motion.div>
+              <>
+                <CreditCard size={18} />
+                Confirm
+              </>
             )}
-          </AnimatePresence>
+          </motion.button>
+          
+          {/* Shine effect */}
+          <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-30 blur-sm" />
         </div>
       </div>
 
-      {/* QR Modal */}
+      {/* QR MODAL (AESTHETIC) */}
       <AnimatePresence>
         {showQR && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/60 backdrop-blur-xl transition-all">
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0, y: 100 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.5, opacity: 0, y: 100 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] p-10 flex flex-col items-center gap-8 relative shadow-[0_0_100px_rgba(46,196,182,0.3)]"
-            >
-              <button 
-                onClick={() => navigate('/home')}
-                className="absolute top-6 right-6 p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 transition-transform active:scale-75"
-              >
-                <X size={20} />
-              </button>
-
-              <div className="text-center space-y-2">
-                <div className="w-16 h-1 w-12 bg-primary/20 rounded-full mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Your Digital Pass</h2>
-                <p className="text-slate-400 font-medium text-sm">Scan this at the entrance</p>
-              </div>
-
-              <div className="p-8 bg-white dark:bg-slate-800 rounded-5xl shadow-inner border-2 border-slate-50 dark:border-slate-800 ring-1 ring-black/5 relative group">
-                <QRCodeSVG 
-                    value={`BOOKING-${event.id}-${Date.now()}`} 
-                    size={200}
-                    fgColor={selectedTicket === 'elite' ? '#2EC4B6' : '#0F172A'}
-                    className="relative z-10"
-                />
-                <div className="absolute inset-0 bg-primary/5 rounded-5xl opacity-0 group-hover:opacity-100 transition-opacity animate-pulse" />
-              </div>
-
-              <div className="w-full space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800/50">
-                <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Event</span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{event.title}</span>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-3xl animate-fadeIn">
+             <motion.div
+               initial={{ scale: 0.6, opacity: 0, y: 100 }}
+               animate={{ scale: 1, opacity: 1, y: 0 }}
+               className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] p-8 flex flex-col items-center gap-6 relative shadow-2xl border border-white dark:border-white/10"
+             >
+                <div className="w-16 h-1 bg-slate-100 dark:bg-slate-800 rounded-full mb-2" />
+                <div className="text-center space-y-1">
+                   <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">Your Pass</h2>
+                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Entry ID: 94827103</p>
                 </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Pass Type</span>
-                    <span className="text-sm font-bold text-primary">{TICKET_TYPES.find(t => t.id === selectedTicket).name}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Date</span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">Oct 24, 2026</span>
-                </div>
-              </div>
 
-              <Button 
-                onClick={() => navigate('/home')}
-                variant="primary" 
-                className="w-full h-16 rounded-3xl"
-              >
-                Done
-              </Button>
-            </motion.div>
+                <div className="p-6 bg-white rounded-[2.5rem] shadow-inner-xl border border-slate-50 relative group">
+                   <QRCodeSVG value={`EVENT-${event.id}-${Date.now()}`} size={160} fgColor="#1FD3BA" />
+                   <div className="absolute -top-3 -right-3 w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20 backdrop-blur-md">
+                      <Sparkles size={20} />
+                   </div>
+                </div>
+
+                <div className="w-full space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                   {[
+                     { l: 'Event', v: event.title },
+                     { l: 'Date', v: event.date },
+                     { l: 'Ticket', v: currentTicket.name },
+                     { l: 'Seats', v: selectedSeats.join(', ') || 'N/A' },
+                   ].map(it => (
+                     <div key={it.l} className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{it.l}</span>
+                        <span className="text-xs font-black text-slate-800 dark:text-white w-32 text-right truncate">{it.v}</span>
+                     </div>
+                   ))}
+                </div>
+
+                <button
+                  onClick={() => navigate('/home')}
+                  className="w-full h-14 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 mt-2"
+                >
+                  Return Home
+                </button>
+             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };

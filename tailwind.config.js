@@ -9,11 +9,12 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#1FD3BA', // Teal - تركواز مشرق
+          DEFAULT: '#1FD3BA',
           light: '#48E5D5',
           dark: '#17A89E',
+          soft: '#2EC4B6',
         },
-        secondary: '#FFD93D', // Yellow - أصفر مشرق
+        secondary: '#FFD93D',
         accent: {
           DEFAULT: '#5B8DEE', // Blue - أزرق
           teal: '#1FD3BA',
